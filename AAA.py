@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 def main():
  
@@ -241,8 +242,8 @@ def main():
         file.write('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
         print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
         
-        # cwd = os.getcwd()
-        # print("Result saved in \nDirectory: "+cwd+"\nFilename: output.txt")
+        cwd = os.getcwd()
+        print("Result saved in \nDirectory: "+cwd+"\nFilename: output.txt")
     file.close()
 
 if __name__ == "__main__":
