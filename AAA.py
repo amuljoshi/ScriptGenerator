@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 
+
 def main():
  
     #READ datas from Google and MML
@@ -14,10 +15,10 @@ def main():
 
     # Initialise a tabular data to incorporate different traffic types, their filter, digits used and filtergroup. This can be taken from file in future
     Application =   { 
-                    'Name':         ['Google',      'Facebook',         'Instagram',    'Tiktok'],
-                    'Filtername':   ['f_youtube_',  'f_fbspecialip',    'f_instagram_', 'f_tiktokip_'],
-                    'GEN':          ['03',          '04',               '04',           '03'],
-                    'Filtergroup':  ['fg_youtube',  'fg_fbspecialip',   'fg_instagram', 'fg_tiktokip']
+                    'Name':         ['Google',     'Facebook',       'Instagram',    'Tiktok',      'Google-IPV6',    'Facebook-IPV6',    'Instagram-IPV6'],
+                    'Filtername':   ['f_youtube_', 'f_fbspecialip',  'f_instagram_', 'f_tiktokip_', 'f_youtubeipv6_', 'f_fbspecialipv6_', 'f_instagramipv6_'],
+                    'GEN':          ['03',         '04',             '04',           '03',          '03',             '04',               '04'],
+                    'Filtergroup':  ['fg_youtube', 'fg_fbspecialip', 'fg_instagram', 'fg_tiktokip', 'fg_youtube',     'fg_fbspecialip',   'fg_instagram']
                     }
     # print(Application)
 
@@ -25,7 +26,9 @@ def main():
 
     # Take input from user for the traffic type the script is being generated for. Since user input is disabled in for Debug Console in VISUDO, use direct userinput from script for testing.
     # userinput = 3
-    userinput = int(input("\nPlease type the option number for the Application(Choose 1,2,3,etc):\n1> Google\n2> Facebook\n3> Instagram\n4> Tiktok\n\nYourInput: "))-1
+    print("\nPlease type the option number for the Application(Choose 0,1,2,3,etc):")
+    print(appdf['Name'])
+    userinput = int(input("\nYourInput: "))
     print("\n"+appdf.loc[userinput,'Name']+" selected !!\n")
 
     # if (userinput == '1'):
@@ -44,7 +47,7 @@ def main():
     updater = 0
     generator = 0
     
-    #Check for three 000 or four 0000 before comparing
+    #Check for three 000 or four 0000 before comparing two datas
     if(appdf.loc[userinput,'GEN'] == '03'):
         for i in range(0,df_temp.shape[0]):
             generator = generator + 1        
@@ -201,50 +204,93 @@ def main():
     # print(output)
     # print(output.shape[0])
 
-    with open("output.txt","w") as file:
-        file.write('*****************\nSCRIPT: \n*****************\n\n')
-        print('\n*****************\nSCRIPT: \n*****************\n')
+    #Check for ipv4 or ipv6 before printing out outputs
+    if(appdf.loc[userinput,'Name'].find('-IPV6')!=-1):
+        with open("outputipv6.txt","w") as file:
+            file.write('*****************\nSCRIPT: \n*****************\n\n')
+            print('\n*****************\nSCRIPT: \n*****************\n')
+            for i in range(output.shape[0]):
+                # print(counter)
+                if(output.loc[i,"SVRENDPORT"] == "Assigned"):
+                    print('MOD FILTERIPV6: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+output.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(int(output.loc[i,'Subnet']))+';')
+                    file.write('MOD FILTERIPV6: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+output.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(int(output.loc[i,'Subnet']))+';\n') 
+                elif(output.loc[i,"SVRENDPORT"] == "New"):
+                    print('ADD FILTERIPV6: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+output.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(int(output.loc[i,'Subnet']))+';')
+                    print('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";')
+                    file.write('ADD FILTERIPV6: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+output.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(int(output.loc[i,'Subnet']))+';\n')
+                    file.write('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";\n')
+                elif(output.loc[i,"SVRENDPORT"] == "Remove"):
+                    print('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";')
+                    print('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+output.loc[i,'Filtername']+'";')
+                    file.write('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";\n')
+                    file.write('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+output.loc[i,'Filtername']+'";\n')
+            rollback = output
+            file.write('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n\n*****************\nROLLBACK SCRIPT: \n*****************\n\n')
+            print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n\n*****************\nROLLBACK SCRIPT: \n*****************\n')
+            for i in range(rollback.shape[0]):
+                if(rollback.loc[i,"SVRENDPORT"] == "Assigned"):
+                    rollback.loc[i,['Ip Address', 'Subnet']] = rollback.loc[i,'Ip Prefix'].split('/')
+                    print('MOD FILTERIPV6: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+rollback.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(rollback.loc[i,'Subnet'])+';')
+                    file.write('MOD FILTERIPV6: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+rollback.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(rollback.loc[i,'Subnet'])+';\n') 
+                elif(rollback.loc[i,"SVRENDPORT"] == "New"):
+                    print('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";')
+                    print('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+rollback.loc[i,'Filtername']+'";')
+                    file.write('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')
+                    file.write('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')                
+                elif(rollback.loc[i,"SVRENDPORT"] == "Remove"):
+                    print('ADD FILTERIPV6: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+rollback.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(rollback.loc[i,'Subnet'])+';')
+                    print('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";')
+                    file.write('ADD FILTERIPV6: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+rollback.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(rollback.loc[i,'Subnet'])+';\n')
+                    file.write('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')
+            file.write('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
+            print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
+
+            cwd = os.getcwd()
+            print("Result saved in \nDirectory: "+cwd+"\nFilename: outputipv6.txt")
+        file.close()        
+    else:
+        with open("output.txt","w") as file:
+            file.write('*****************\nSCRIPT: \n*****************\n\n')
+            print('\n*****************\nSCRIPT: \n*****************\n')
+            for i in range(output.shape[0]):
+                # print(counter)
+                if(output.loc[i,"SVRENDPORT"] == "Assigned"):
+                    print('MOD FILTER: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+output.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(int(output.loc[i,'Subnet']))+';')
+                    file.write('MOD FILTER: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+output.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(int(output.loc[i,'Subnet']))+';\n') 
+                elif(output.loc[i,"SVRENDPORT"] == "New"):
+                    print('ADD FILTER: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+output.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(int(output.loc[i,'Subnet']))+';')
+                    print('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";')
+                    file.write('ADD FILTER: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+output.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(int(output.loc[i,'Subnet']))+';\n')
+                    file.write('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";\n')
+                elif(output.loc[i,"SVRENDPORT"] == "Remove"):
+                    print('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";')
+                    print('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+output.loc[i,'Filtername']+'";')
+                    file.write('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";\n')
+                    file.write('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+output.loc[i,'Filtername']+'";\n')
+            rollback = output
+            file.write('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n\n*****************\nROLLBACK SCRIPT: \n*****************\n\n')
+            print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n\n*****************\nROLLBACK SCRIPT: \n*****************\n')
+            for i in range(rollback.shape[0]):
+                if(rollback.loc[i,"SVRENDPORT"] == "Assigned"):
+                    rollback.loc[i,['Ip Address', 'Subnet']] = rollback.loc[i,'Ip Prefix'].split('/')
+                    print('MOD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';')
+                    file.write('MOD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';\n') 
+                elif(rollback.loc[i,"SVRENDPORT"] == "New"):
+                    print('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";')
+                    print('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+rollback.loc[i,'Filtername']+'";')
+                    file.write('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')
+                    file.write('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')                
+                elif(rollback.loc[i,"SVRENDPORT"] == "Remove"):
+                    print('ADD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';')
+                    print('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";')
+                    file.write('ADD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';\n')
+                    file.write('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')
+            file.write('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
+            print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
+
+            cwd = os.getcwd()
+            print("Result saved in \nDirectory: "+cwd+"\nFilename: output.txt")
         file.close()
-    with open("output.txt","a") as file:
-        for i in range(output.shape[0]):
-            # print(counter)
-            if(output.loc[i,"SVRENDPORT"] == "Assigned"):
-                print('MOD FILTER: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+output.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(int(output.loc[i,'Subnet']))+';')
-                file.write('MOD FILTER: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+output.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(int(output.loc[i,'Subnet']))+';\n') 
-            elif(output.loc[i,"SVRENDPORT"] == "New"):
-                print('ADD FILTER: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+output.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(int(output.loc[i,'Subnet']))+';')
-                print('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";')
-                file.write('ADD FILTER: FILTERNAME="'+output.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+output.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(int(output.loc[i,'Subnet']))+';\n')
-                file.write('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";\n')
-            elif(output.loc[i,"SVRENDPORT"] == "Remove"):
-                print('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";')
-                print('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+output.loc[i,'Filtername']+'";')
-                file.write('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+output.loc[i,'Filtername']+'";\n')
-                file.write('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+output.loc[i,'Filtername']+'";\n')
-        rollback = output
-        file.write('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n\n*****************\nROLLBACK SCRIPT: \n*****************\n\n')
-        print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n\n*****************\nROLLBACK SCRIPT: \n*****************\n')
-        for i in range(rollback.shape[0]):
-            if(rollback.loc[i,"SVRENDPORT"] == "Assigned"):
-                rollback.loc[i,['Ip Address', 'Subnet']] = rollback.loc[i,'Ip Prefix'].split('/')
-                print('MOD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';')
-                file.write('MOD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';\n') 
-            elif(rollback.loc[i,"SVRENDPORT"] == "New"):
-                print('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";')
-                print('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+rollback.loc[i,'Filtername']+'";')
-                file.write('RMV FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')
-                file.write('RMV FILTER: OPMODE=SPECIFIC, FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')                
-            elif(rollback.loc[i,"SVRENDPORT"] == "Remove"):
-                print('ADD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';')
-                print('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";')
-                file.write('ADD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';\n')
-                file.write('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')
-        file.write('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
-        print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
-        
-        cwd = os.getcwd()
-        print("Result saved in \nDirectory: "+cwd+"\nFilename: output.txt")
-    file.close()
 
 if __name__ == "__main__":
     main()
