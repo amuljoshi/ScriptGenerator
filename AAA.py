@@ -6,7 +6,7 @@ def main():
  
     #READ datas from Google and MML
     df = pd.read_csv('LatestIp.csv')
-    
+    df['IP Prefix'] = df['IP Prefix'].str.upper()      # For Ipv6 cases the upper and lower case matters so making it upper so that there will be no issue later during comparision.
     df_temp = pd.read_excel('MML.xlsx')
     df_xlsx = pd.read_excel('MML.xlsx')
 
