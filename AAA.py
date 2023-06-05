@@ -1,14 +1,28 @@
+import re
 import pandas as pd
 import os
+
+
+def find_lines_with_keywords(filename, keyword1, keyword2):
+    lines_with_keywords = []
+
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+
+        for line in lines:
+            if str(keyword1) in line and str(keyword2) not in line:
+                lines_with_keywords.append(line)
+
+    return lines_with_keywords
 
 
 def main():
  
     #READ datas from Google and MML
     df = pd.read_csv('LatestIp.csv')
-    df['IP Prefix'] = df['IP Prefix'].str.upper()      # For Ipv6 cases the upper and lower case matters so making it upper so that there will be no issue later during comparision.
-    df_temp = pd.read_excel('MML.xlsx')
-    df_xlsx = pd.read_excel('MML.xlsx')
+    df['IP Prefix'] = df['IP Prefix'].str.upper()
+    # df_temp = pd.read_excel('MML.xlsx')
+    # df_xlsx = pd.read_excel('MML.xlsx')
 
     # print(df_temp)
     # print(df_xlsx)
@@ -43,6 +57,36 @@ def main():
     # else :
     #     print('\nTiktok selected\n')
     #     userinput = 3
+
+    # initialise the necessary for filling up dataframe directly from mml configuration file
+    filename = 'mmlconf.txt'
+    keyword1 = appdf.loc[userinput,'Filtername']
+    keyword2 = appdf.loc[userinput,'Filtergroup']
+    # print(keyword1+":"+keyword2)
+    lines = find_lines_with_keywords(filename, keyword1, keyword2)
+
+    # Create DataFrame df_result with delimited values "=" and ","
+    data = []
+    for line in lines:
+        parts = [part.strip().strip('"') for part in re.split('=|,', line)]
+
+        data.append(parts)
+    headers = ['From MML', 'Filtername', 'L34PROTTYPE', 'STRING', 'L34PROTOCOL', 'ANY', 'SVRIPMODE', 'IP', 'SVRIP', 'Ip Address', 'SVRIPMASKTYPE', 'LENGTHTYPE', 'SVRIPMASKLEN', 'Subnet', 'MSSTARTPORT', '0', 'MSENDPORT', '65535', 'SVRSTARTPORT', '0', 'SVRENDPORT', 'Ip Prefix']  # Specify the header field names here
+    df_result = pd.DataFrame(data, columns=headers)
+
+    # print(df_result)
+
+    # Output DataFrame to Excel file MML_gen.xlsx
+    output_file = 'MML_gen.xlsx'  # Specify the desired output file name
+    df_result.to_excel(output_file, index=False)
+    print("Generated MML saved to "+os.getcwd()+f"\{output_file}")
+
+    # Assign the output generated MML to two data frames for comparing as well as generating output.
+    df_xlsx = pd.read_excel(output_file)
+    df_temp = pd.read_excel(output_file)
+
+
+    print("Processing...\n")
 
     updater = 0
     generator = 0
