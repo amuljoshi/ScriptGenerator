@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 import os
+from datetime import datetime
 
 
 def find_lines_with_keywords(filename, keyword1, keyword2):
@@ -251,8 +252,10 @@ def main():
     #Check for ipv4 or ipv6 before printing out outputs
     if(appdf.loc[userinput,'Name'].find('-IPV6')!=-1):
         with open("outputipv6.txt","w") as file:
-            file.write('*****************\nSCRIPT: \n*****************\n\n')
-            print('\n*****************\nSCRIPT: \n*****************\n')
+            current_datetime = datetime.now()
+            formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            file.write('**********************************\nSCRIPT('+formatted_datetime+'): \n**********************************\n\n')
+            print('\n**********************************\nSCRIPT('+formatted_datetime+'): \n**********************************\n')
             for i in range(output.shape[0]):
                 # print(counter)
                 if(output.loc[i,"SVRENDPORT"] == "Assigned"):
@@ -294,8 +297,10 @@ def main():
         file.close()        
     else:
         with open("output.txt","w") as file:
-            file.write('*****************\nSCRIPT: \n*****************\n\n')
-            print('\n*****************\nSCRIPT: \n*****************\n')
+            current_datetime = datetime.now()
+            formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            file.write('**********************************\nSCRIPT('+formatted_datetime+'): \n**********************************\n\n')
+            print('\n**********************************\nSCRIPT('+formatted_datetime+'): \n**********************************\n')
             for i in range(output.shape[0]):
                 # print(counter)
                 if(output.loc[i,"SVRENDPORT"] == "Assigned"):
