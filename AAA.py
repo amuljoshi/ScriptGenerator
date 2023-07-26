@@ -30,10 +30,10 @@ def main():
 
     # Initialise a tabular data to incorporate different traffic types, their filter, digits used and filtergroup. This can be taken from file in future
     Application =   { 
-                    'Name':         ['Google',     'Facebook',       'Instagram',    'Tiktok',      'Google-IPV6',    'Facebook-IPV6',    'Instagram-IPV6'],
-                    'Filtername':   ['f_youtube_', 'f_fbspecialip',  'f_instagram_', 'f_tiktokip_', 'f_youtubeipv6_', 'f_fbspecialipv6_', 'f_instagramipv6_'],
-                    'GEN':          ['03',         '04',             '04',           '03',          '03',             '04',               '04'],
-                    'Filtergroup':  ['fg_youtube', 'fg_fbspecialip', 'fg_instagram', 'fg_tiktokip', 'fg_youtube',     'fg_fbspecialip',   'fg_instagram']
+                    'Name':         ['Google',     'Facebook',       'Instagram',    'Tiktok',      'Google-IPV6',    'Facebook-IPV6',    'Instagram-IPV6',     'Tiktok-IPV6'],
+                    'Filtername':   ['f_youtube_', 'f_fbspecialip',  'f_instagram_', 'f_tiktokip_', 'f_youtubeipv6_', 'f_fbspecialipv6_', 'f_instagramipv6_',   'f_tiktokipv6_'],
+                    'GEN':          ['03',         '04',             '04',           '03',          '03',             '04',               '04',                 '03'],
+                    'Filtergroup':  ['fg_youtube', 'fg_fbspecialip', 'fg_instagram', 'fg_tiktokip', 'fg_youtube',     'fg_fbspecialip',   'fg_instagram',       'fg_tiktokip']
                     }
     # print(Application)
 
@@ -92,7 +92,7 @@ def main():
     updater = 0
     generator = 0
     
-    #Check for three 000 or four 0000 before comparing two datas
+    #Check for three 000 or four 0000 before comparing two datas  (for example f_tiktokip_001 vs f_fbspecialip0001)
     if(appdf.loc[userinput,'GEN'] == '03'):
         for i in range(0,df_temp.shape[0]):
             generator = generator + 1        
@@ -183,7 +183,7 @@ def main():
             print(df.loc[i,"Services"],df.loc[i,"IP Prefix"]) 
 
     # print(df)
-    # print(current, latest)
+    # print("\nRemove Total: ", current, " \nAdd Total: ", latest)
 
     blank = 0
     for i in range(df_xlsx.shape[0]):
@@ -291,6 +291,9 @@ def main():
                     file.write('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')
             file.write('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
             print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
+            
+            file.write("\nRemove Total: "+str(current)+" \nAdd Total: "+str(latest)+"\n")
+            print("\nRemove Total: ", current, " \nAdd Total: ", latest,"\n")
 
             cwd = os.getcwd()
             print("Result saved in \nDirectory: "+cwd+"\nFilename: outputipv6.txt")
@@ -336,6 +339,9 @@ def main():
                     file.write('ADD FLTBINDFLOWF: FLOWFILTERNAME="'+appdf.loc[userinput,'Filtergroup']+'", FILTERNAME="'+rollback.loc[i,'Filtername']+'";\n')
             file.write('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
             print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n')
+
+            file.write("\nRemove Total: "+str(current)+" \nAdd Total: "+str(latest)+"\n")
+            print("\nRemove Total: ", current, " \nAdd Total: ", latest,"\n")
 
             cwd = os.getcwd()
             print("Result saved in \nDirectory: "+cwd+"\nFilename: output.txt")
