@@ -31,7 +31,7 @@ def main():
     # Initialise a tabular data to incorporate different traffic types, their filter, digits used and filtergroup. This can be taken from file in future
     Application =   { 
                     'Name':         ['Google',     'Facebook',       'Instagram',    'Tiktok',      'Google-IPV6',    'Facebook-IPV6',    'Instagram-IPV6',     'Tiktok-IPV6'],
-                    'Filtername':   ['f_youtube_', 'f_fbspecialip',  'f_instagram_', 'f_tiktokip_', 'f_youtubeipv6_', 'f_fbspecialipv6_', 'f_instagramipv6_',   'f_tiktokipv6_'],
+                    'Filtername':   ['f_youtube_', 'f_fbspecialip_',  'f_instagram_', 'f_tiktokip_', 'f_youtubeipv6_', 'f_fbspecialipv6_', 'f_instagramipv6_',   'f_tiktokipv6_'],
                     'GEN':          ['03',         '04',             '04',           '03',          '03',             '04',               '04',                 '03'],
                     'Filtergroup':  ['fg_youtube', 'fg_fbspecialip', 'fg_instagram', 'fg_tiktokip', 'fg_youtube',     'fg_fbspecialip',   'fg_instagram',       'fg_tiktokip']
                     }
