@@ -16,7 +16,6 @@ def find_lines_with_keywords(filename, keyword1, keyword2):
 
     return lines_with_keywords
 
-
 def main():
  
     #READ datas from Google and MML
@@ -29,15 +28,19 @@ def main():
     # print(df_xlsx)
 
     # Initialise a tabular data to incorporate different traffic types, their filter, digits used and filtergroup. This can be taken from file in future
-    Application =   { 
-                    'Name':         ['Google',     'Facebook',       'Instagram',    'Tiktok',      'Google-IPV6',    'Facebook-IPV6',    'Instagram-IPV6',     'Tiktok-IPV6'],
-                    'Filtername':   ['f_youtube_', 'f_fbspecialip_',  'f_instagram_', 'f_tiktokip_', 'f_youtubeipv6_', 'f_fbspecialipv6_', 'f_instagramipv6_',   'f_tiktokipv6_'],
-                    'GEN':          ['03',         '04',             '04',           '03',          '03',             '04',               '04',                 '03'],
-                    'Filtergroup':  ['fg_youtube', 'fg_fbspecialip', 'fg_instagram', 'fg_tiktokip', 'fg_youtube',     'fg_fbspecialip',   'fg_instagram',       'fg_tiktokip']
-                    }
-    # print(Application)
+    # Application =   { 
+    #                 'Name':         ['Google',     'Facebook',       'Instagram',    'Tiktok',      'Google-IPV6',    'Facebook-IPV6',    'Instagram-IPV6',     'Tiktok-IPV6'],
+    #                 'Filtername':   ['f_youtube_', 'f_fbspecialip_',  'f_instagram_', 'f_tiktokip_', 'f_youtubeipv6_', 'f_fbspecialipv6_', 'f_instagramipv6_',   'f_tiktokipv6_'],
+    #                 'GEN':          ['03',         '04',             '04',           '03',          '03',             '04',               '04',                 '03'],
+    #                 'Filtergroup':  ['fg_youtube', 'fg_fbspecialip', 'fg_instagram', 'fg_tiktokip', 'fg_youtube',     'fg_fbspecialip',   'fg_instagram',       'fg_tiktokip']
+    #                 }
+    # # print(Application)
 
-    appdf = pd.DataFrame(Application)
+    # appdf = pd.DataFrame(Application)
+
+    # Taking the traffic types, their filter, 000 used and filter group from file instead of initialising from code above. GEN values are integers from String for example 3 instead of 03.
+
+    appdf = pd.read_excel('Application.xlsx')
 
     # Take input from user for the traffic type the script is being generated for. Since user input is disabled in for Debug Console in VISUDO, use direct userinput from script for testing.
     # userinput = 3
@@ -93,7 +96,7 @@ def main():
     generator = 0
     
     #Check for three 000 or four 0000 before comparing two datas  (for example f_tiktokip_001 vs f_fbspecialip0001)
-    if(appdf.loc[userinput,'GEN'] == '03'):
+    if(appdf.loc[userinput,'GEN'] == 3):            #  Changed the '03' to 3 since the excel value is in integer and the data need to be compared to integer for GEN
         for i in range(0,df_temp.shape[0]):
             generator = generator + 1        
             filtername = appdf.loc[userinput,'Filtername']+f"{generator:03}"
@@ -178,7 +181,7 @@ def main():
                 break
             count = count + 1
         if(count == df_xlsx.shape[0]):
-            df.loc[i,"Services"] = "New" 
+            df.loc[i,"Services"] = "New"
             latest = latest + 1 
             print(df.loc[i,"Services"],df.loc[i,"IP Prefix"]) 
 
@@ -213,7 +216,7 @@ def main():
     counter = 0
     l = df_xlsx.shape[0]
 
-    if(appdf.loc[userinput,'GEN'] == '03'):
+    if(appdf.loc[userinput,'GEN'] == 3):            #  Changed the '03' to 3 since the excel value is in integer and the data need to be compared to integer for GEN
         while latest - current - blank - counter > 0:
             for i in range(df.shape[0]):
                 if(df.loc[i,"Services"] == "New"):
