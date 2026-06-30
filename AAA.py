@@ -20,6 +20,7 @@ def main():
  
     #READ datas from Google and MML
     df = pd.read_csv('LatestIp.csv')
+    df['Services'] = df['Services'].astype(str)     # Convert the 'Services' column to string type
     df['IP Prefix'] = df['IP Prefix'].str.upper()
     # df_temp = pd.read_excel('MML.xlsx')
     # df_xlsx = pd.read_excel('MML.xlsx')
@@ -42,7 +43,7 @@ def main():
 
     appdf = pd.read_excel('Application.xlsx')
 
-    # Take input from user for the traffic type the script is being generated for. Since user input is disabled in for Debug Console in VISUDO, use direct userinput from script for testing.
+    # Take input from user for the traffic type the script is being generated for. Since user input is disabled in for Debug Console in VISUALSTUDIO, use direct userinput from script for testing.
     # userinput = 3
     print("\nPlease type the option number for the Application(Choose 0,1,2,3,etc):")
     print(appdf['Name'])
@@ -83,10 +84,12 @@ def main():
     # Output DataFrame to Excel file MML_gen.xlsx
     output_file = 'MML_gen.xlsx'  # Specify the desired output file name
     df_result.to_excel(output_file, index=False)
-    print("Generated MML saved to "+os.getcwd()+f"\{output_file}")
+    print("Generated MML saved to "+os.getcwd()+f"\\{output_file}")
 
     # Assign the output generated MML to two data frames for comparing as well as generating output.
     df_xlsx = pd.read_excel(output_file)
+    # df_xlsx["Subnet"] = df_xlsx["Subnet"].astype(str)  
+    df_xlsx["Subnet"] = df_xlsx["Subnet"].astype('int64')  # Convert Subnet column to int64 type
     df_temp = pd.read_excel(output_file)
 
 
@@ -186,7 +189,7 @@ def main():
             print(df.loc[i,"Services"],df.loc[i,"IP Prefix"]) 
 
     # print(df)
-    # print("\nRemove Total: ", current, " \nAdd Total: ", latest)
+    print("\nRemove Total: ", current, " \nAdd Total: ", latest)
 
     blank = 0
     for i in range(df_xlsx.shape[0]):
@@ -207,7 +210,11 @@ def main():
                         else:
                             df_xlsx.loc[k,"SVRENDPORT"] = "New"
                         df.loc[l,"Services"] = "Assigned"
-                        df_xlsx.loc[k,['Ip Address', 'Subnet']] = df.loc[l,'IP Prefix'].split('/')
+                        # To fix the typecast error for Subnet from string to int as the split function returns string and the Subnet is int in the output dataframe. This is required for generating the correct MML script for rollback.
+                        ip_address, subnet = df.loc[l,'IP Prefix'].split('/')
+                        df_xlsx.loc[k,'Ip Address'] = ip_address
+                        df_xlsx.loc[k,'Subnet'] = int(subnet)
+                        # df_xlsx.loc[k,['Ip Address', 'Subnet']] = df.loc[l,'IP Prefix'].split('/')
                         break
     
     # print(df_xlsx)
@@ -279,7 +286,11 @@ def main():
             print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n\n*****************\nROLLBACK SCRIPT: \n*****************\n')
             for i in range(rollback.shape[0]):
                 if(rollback.loc[i,"SVRENDPORT"] == "Assigned"):
-                    rollback.loc[i,['Ip Address', 'Subnet']] = rollback.loc[i,'Ip Prefix'].split('/')
+                    # To fix the typecast error for Subnet from string to int as the split function returns string and the Subnet is int in the output dataframe. This is required for generating the correct MML script for rollback.
+                    # rollback.loc[i,['Ip Address', 'Subnet']] = rollback.loc[i,'Ip Prefix'].split('/')
+                    ip_address, subnet = rollback.loc[i,'Ip Prefix'].split('/')
+                    rollback.loc[i,'Ip Address'] = ip_address
+                    rollback.loc[i,'Subnet'] = int(subnet)                              
                     print('MOD FILTERIPV6: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+rollback.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(rollback.loc[i,'Subnet'])+';')
                     file.write('MOD FILTERIPV6: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPEV6=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIPV6="'+rollback.loc[i,'Ip Address']+'", SVRIPV6MASKTYPE=LENGTHTYPE, SVRIPV6MASKLEN='+str(rollback.loc[i,'Subnet'])+';\n') 
                 elif(rollback.loc[i,"SVRENDPORT"] == "New"):
@@ -327,7 +338,11 @@ def main():
             print('\nSET REFRESHSRV:REFRESHTYPE=ALL;\nSAV RUNNINGCONFIG:;\n\n*****************\nROLLBACK SCRIPT: \n*****************\n')
             for i in range(rollback.shape[0]):
                 if(rollback.loc[i,"SVRENDPORT"] == "Assigned"):
-                    rollback.loc[i,['Ip Address', 'Subnet']] = rollback.loc[i,'Ip Prefix'].split('/')
+                    # To fix the typecast error for Subnet from string to int as the split function returns string and the Subnet is int in the output dataframe. This is required for generating the correct MML script for rollback.
+                    # rollback.loc[i,['Ip Address', 'Subnet']] = rollback.loc[i,'Ip Prefix'].split('/')
+                    ip_address, subnet = rollback.loc[i,'Ip Prefix'].split('/')
+                    rollback.loc[i,'Ip Address'] = ip_address
+                    rollback.loc[i,'Subnet'] = int(subnet)
                     print('MOD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';')
                     file.write('MOD FILTER: FILTERNAME="'+rollback.loc[i,'Filtername']+'", L34PROTTYPE=STRING, L34PROTOCOL=ANY, SVRIPMODE=IP, SVRIP="'+rollback.loc[i,'Ip Address']+'", SVRIPMASKTYPE=LENGTHTYPE, SVRIPMASKLEN='+str(rollback.loc[i,'Subnet'])+';\n') 
                 elif(rollback.loc[i,"SVRENDPORT"] == "New"):
