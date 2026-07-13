@@ -115,7 +115,7 @@ def main():
                     # print(df_xlsx.loc[updater], df_temp.loc[i])
                     df_xlsx.loc[updater] = df_temp.loc[i]
                     # print(df_xlsx.loc[updater,["Filtername","SVRENDPORT"]])
-                    df_xlsx.loc[updater,["Filtername","Ip Address","Subnet","SVRENDPORT"]] = [ filtername ,"Blank","Blank","Blank"]
+                    df_xlsx.loc[updater,["Filtername","Ip Address","Subnet","SVRENDPORT"]] = [ filtername ,"Blank",-1,"Blank"]      # Need to assign -1 to Subnet as the split function returns string and the Subnet is int in the output dataframe. This is required for generating the correct MML script for rollback.
                     # print(df_xlsx.loc[updater])
                     updater = updater + 1
                     generator = generator + 1
@@ -142,7 +142,7 @@ def main():
                     # print(df_xlsx.loc[updater], df_temp.loc[i])
                     df_xlsx.loc[updater] = df_temp.loc[i]
                     # print(df_xlsx.loc[updater,["Filtername","SVRENDPORT"]])
-                    df_xlsx.loc[updater,["Filtername","Ip Address","Subnet","SVRENDPORT"]] = [ filtername ,"Blank","Blank","Blank"]
+                    df_xlsx.loc[updater,["Filtername","Ip Address","Subnet","SVRENDPORT"]] = [ filtername ,"Blank",-1,"Blank"]      # Need to assign -1 to Subnet as the split function returns string and the Subnet is int in the output dataframe. This is required for generating the correct MML script for rollback.
                     # print(df_xlsx.loc[updater])
                     updater = updater + 1
                     generator = generator + 1
