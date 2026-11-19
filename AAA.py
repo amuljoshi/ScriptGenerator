@@ -229,7 +229,12 @@ def main():
                 if(df.loc[i,"Services"] == "New"):
                     l = l + 1
                     df.loc[i,"Services"] = "Assigned"
-                    df_xlsx.loc[l,['Ip Address', 'Subnet']] = df.loc[i,'IP Prefix'].split('/')
+                    # df_xlsx.loc[l,['Ip Address', 'Subnet']] = df.loc[i,'IP Prefix'].split('/')
+                    # To fix the typecast error for Subnet from string to int as the split function returns string and the Subnet is int in the output dataframe. This is required for generating the correct MML script for rollback.
+                    ip_address, subnet = df.loc[i,'IP Prefix'].split('/')
+                    df_xlsx.loc[l,'Ip Address'] = ip_address
+                    df_xlsx.loc[l,'Subnet'] = int(subnet)
+                    
                     df_xlsx.loc[l,'SVRENDPORT'] = "New"
                     # print(l)
                     df_xlsx.loc[l,'Filtername'] = appdf.loc[userinput,'Filtername']+"{:03d}".format(l)
@@ -243,7 +248,12 @@ def main():
                 if(df.loc[i,"Services"] == "New"):
                     l = l + 1
                     df.loc[i,"Services"] = "Assigned"
-                    df_xlsx.loc[l,['Ip Address', 'Subnet']] = df.loc[i,'IP Prefix'].split('/')
+                    # df_xlsx.loc[l,['Ip Address', 'Subnet']] = df.loc[i,'IP Prefix'].split('/')
+                    # To fix the typecast error for Subnet from string to int as the split function returns string and the Subnet is int in the output dataframe. This is required for generating the correct MML script for rollback.
+                    ip_address, subnet = df.loc[i,'IP Prefix'].split('/')
+                    df_xlsx.loc[l,'Ip Address'] = ip_address
+                    df_xlsx.loc[l,'Subnet'] = int(subnet)
+
                     df_xlsx.loc[l,'SVRENDPORT'] = "New"
                     # print(l)
                     df_xlsx.loc[l,'Filtername'] = appdf.loc[userinput,'Filtername']+"{:04d}".format(l)
